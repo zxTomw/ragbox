@@ -190,7 +190,7 @@ describe('React chat workspace', () => {
     await h.user.click(dialog.getByRole('button', { name: `Delete ${label}` }));
     await h.user.click(dialog.getByRole('button', { name: 'Delete' }));
     expect(await dialog.findByText(/could not|unable/i)).toBeTruthy();
-    expect(dialog.queryByText(/^Done\./)).toBeNull();
+    expect(dialog.queryByText(/^Deleted\./)).toBeNull();
     if (target === 'model') expect(h.runtime.clearModel).toHaveBeenCalledOnce();
     else expect(h.runtime.removeCollection).toHaveBeenCalledWith('nfcorpus');
     h.chat.dispose();

@@ -5,7 +5,7 @@ import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 import {
   ArrowDownToLine, ArrowRight, ArrowUp, ArrowUpRight, BookOpen, Check, ChevronDown,
-  ChevronRight, CircleHelp, Copy, Cpu, Database, ExternalLink, FileText, FlaskConical,
+  CircleHelp, Copy, Cpu, Database, ExternalLink, FileText, FlaskConical,
   Globe2, HardDrive, Layers3, Menu, MessageSquare, Plus, RefreshCw, Search,
   Settings2, ShieldCheck, Sparkles, Square, Trash2, X,
 } from 'lucide-react';
@@ -22,18 +22,18 @@ import { formatBytes } from './format.ts';
 gsap.registerPlugin(useGSAP);
 
 const COLLECTIONS: Record<Corpus, {
-  name: string; label: string; description: string; count: string; size: string;
+  name: string; description: string; count: string; size: string;
   icon: ComponentType<LucideProps>; examples: readonly string[];
 }> = {
   nfcorpus: {
-    name: 'NFCorpus', label: 'SCIENCE & HEALTH',
-    description: 'Explore nutrition, health, and medical research.',
+    name: 'NFCorpus',
+    description: 'Nutrition and medical research.',
     count: '3,633 documents', size: 'Small download', icon: FlaskConical,
     examples: EXAMPLE_POOL.nfcorpus.slice(0, 3),
   },
   msmarco: {
-    name: 'MS MARCO', label: 'A WORLD OF KNOWLEDGE',
-    description: 'Find answers across millions of web passages.',
+    name: 'MS MARCO',
+    description: 'General web passages.',
     count: '8.8M passages', size: '3.35 GB index', icon: Globe2,
     examples: EXAMPLE_POOL.msmarco.slice(0, 3),
   },
@@ -51,7 +51,7 @@ function StatusDot({ ready = false, busy = false }: { ready?: boolean; busy?: bo
 }
 function stateLabel(state: ResourceState) {
   const labels: Partial<Record<ResourceState['phase'], string>> = {
-    ready: 'Ready to explore', saved: 'Saved on device', checking: 'Checking collection',
+    ready: 'Ready', saved: 'Saved', checking: 'Checking collection',
     preparing: 'Preparing index', downloading: 'Downloading index', opening: 'Opening index',
     error: 'Needs attention', unsupported: 'Browser not supported',
   };
@@ -91,7 +91,7 @@ export function App({ runtime }: { runtime: AppRuntime }) {
   }, { scope: shell });
 
   useEffect(() => {
-    document.title = `${view === 'collections' ? 'Collections' : hasTurns ? conversation.title : 'Your knowledge, connected'} · RAGbox`;
+    document.title = `${view === 'collections' ? 'Collections' : hasTurns ? conversation.title : 'Chat'} · RAGbox`;
   }, [view, hasTurns, conversation.title]);
   useEffect(() => {
     const media = window.matchMedia?.('(max-width: 650px)');
@@ -133,46 +133,43 @@ export function App({ runtime }: { runtime: AppRuntime }) {
       }
     }}>
       <button className="icon-button mobile-nav-close" aria-label="Close navigation" onClick={() => setSidebarOpen(false)}><X size={18} /></button>
-      <button className="sidebar-brand" onClick={newChat} aria-label="RAGbox home"><BrandMark /><span>ragbox<span className="brand-period">.</span></span><span className="beta-label">BETA</span></button>
+      <button className="sidebar-brand" onClick={newChat} aria-label="RAGbox home"><BrandMark /><span>ragbox<span className="brand-period">.</span></span></button>
       <div className="sidebar-primary"><button className="new-chat-button" aria-label="New conversation" onClick={newChat}><Plus size={17} />New conversation<span className="key-hint" aria-hidden="true"><ArrowUpRight size={14} /></span></button>
         <nav className="primary-nav" aria-label="Main">
           <button className={view === 'chat' ? 'nav-active' : ''} onClick={() => { setView('chat'); setSidebarOpen(false); }} aria-current={view === 'chat' ? 'page' : undefined}><MessageSquare size={17} />Chat<span className="nav-active-dot" /></button>
-          <button aria-label="Collections" className={view === 'collections' ? 'nav-active' : ''} onClick={() => { setView('collections'); setSidebarOpen(false); }} aria-current={view === 'collections' ? 'page' : undefined}><Layers3 size={17} />Collections<span className="nav-count" aria-hidden="true">02</span></button>
+          <button aria-label="Collections" className={view === 'collections' ? 'nav-active' : ''} onClick={() => { setView('collections'); setSidebarOpen(false); }} aria-current={view === 'collections' ? 'page' : undefined}><Layers3 size={17} />Collections</button>
         </nav>
       </div>
       <section className="sidebar-section">
-        <div className="sidebar-section-label">RECENT CONVERSATIONS<span>{recent.length ? recent.length.toString().padStart(2, '0') : '—'}</span></div>
+        <div className="sidebar-section-label">RECENT</div>
         {recent.length ? <div className="recent-list">{recent.map(item => <button key={item.id} aria-label={item.title} className={`recent-chat ${item.id === conversation.id && view === 'chat' ? 'recent-active' : ''}`} title={item.title} onClick={() => openChat(item.id)}>
           <MessageSquare size={14} /><span>{item.title}</span><span className="recent-corpus">{item.corpus === 'nfcorpus' ? 'NF' : 'MS'}</span>
-        </button>)}</div> : <div className="history-empty"><span className="history-line" /><span className="history-line short" /><p>A little curiosity goes a long way.<br />Your conversations will live here.</p></div>}
+        </button>)}</div> : <div className="history-empty"><p>No conversations yet.</p></div>}
       </section>
       <div className="sidebar-footer">
-        <div className="local-note"><span className="local-note-icon"><ShieldCheck size={19} /></span><div><strong>Yours. And only yours.</strong><p>No uploads. No API keys.</p></div></div>
         <button className="sidebar-settings" onClick={() => setSetupTab('collections')}><Settings2 size={16} />Workspace setup<ArrowUpRight size={14} /></button>
-        <div className="sidebar-bottom"><span><StatusDot ready />Running on your device</span><a href="https://github.com/zxTomw/ragbox" target="_blank" rel="noreferrer" aria-label="View RAGbox on GitHub"><ExternalLink size={13} /></a></div>
+        <div className="sidebar-bottom"><span><ShieldCheck size={12} />On your device</span><a href="https://github.com/zxTomw/ragbox" target="_blank" rel="noreferrer" aria-label="View RAGbox on GitHub"><ExternalLink size={13} /></a></div>
       </div>
     </aside>
     <main id="main-content" className="workspace" tabIndex={-1} inert={sidebarOpen}>
       <header className="workspace-header">
-        <div className="header-breadcrumb"><button ref={menuButton} className="icon-button mobile-menu" aria-label="Open navigation" onClick={() => setSidebarOpen(true)}><Menu size={20} /></button><span className="breadcrumb-root">Workspace</span><ChevronRight size={13} /><span>{view === 'collections' ? 'Collections' : 'Chat'}</span></div>
-        <div className="header-actions"><span className="local-badge"><span className="tiny-orbit" /><span>LOCAL FIRST</span></span><span className="header-divider" /><button className="icon-button" onClick={() => setSetupTab('model')} aria-label="About local answers" title="Local answer model"><Cpu size={17} /></button></div>
+        <div className="header-breadcrumb"><button ref={menuButton} className="icon-button mobile-menu" aria-label="Open navigation" onClick={() => setSidebarOpen(true)}><Menu size={20} /></button><span>{view === 'collections' ? 'Collections' : 'Chat'}</span></div>
+        <div className="header-actions"><button className="icon-button" onClick={() => setSetupTab('model')} aria-label="About local answers" title="Local answer model"><Cpu size={17} /></button></div>
       </header>
       {view === 'collections' ? <Library runtime={runtime} selected={selected} onSelect={corpus => { choose(corpus); setView('chat'); }} onModel={() => setSetupTab('model')} /> : <div className={`chat-workspace ${hasTurns ? 'has-conversation' : ''}`}>
         {hasTurns ? <>
-          <div className="conversation-heading"><div><span className="eyebrow">YOUR CONVERSATION</span><h1>{conversation.title}</h1></div><button className="collection-pill" onClick={() => setSetupTab('collections')}><Database size={13} />{COLLECTIONS[selected].name}<ChevronDown size={13} /></button></div>
+          <div className="conversation-heading"><h1>{conversation.title}</h1><button className="collection-pill" onClick={() => setSetupTab('collections')}><Database size={13} />{COLLECTIONS[selected].name}<ChevronDown size={13} /></button></div>
           <Transcript key={conversation.id} conversationId={conversation.id} turns={conversation.turns} runtime={runtime} onSource={value => setSource({ conversationId: conversation.id, turnId: value.turnId, document: value.document })} onModel={() => setSetupTab('model')} />
         </> : <Welcome key={selected} selected={selected} resources={resources.resources} onSelect={choose} />}
         <div className={`composer-area ${hasTurns ? 'composer-docked' : ''}`}>
           <Composer runtime={runtime} messageRef={messageRef} onSetup={() => setSetupTab('collections')} onModel={() => setSetupTab('model')} />
           {!hasTurns && <>
             {!collectionReady(resources, selected) && <CollectionNudge runtime={runtime} corpus={selected} />}
-            <div className="starter-section"><span className="starter-label">A LITTLE INSPIRATION</span><div className="starter-questions">{COLLECTIONS[selected].examples.map(question => <button key={question} onClick={() => example(question)}>{question}<ArrowUpRight size={14} /></button>)}</div></div>
+            <div className="starter-section" aria-label="Suggested questions"><div className="starter-questions">{COLLECTIONS[selected].examples.map(question => <button key={question} onClick={() => example(question)}>{question}<ArrowUpRight size={14} /></button>)}</div></div>
           </>}
-          <p className="composer-footnote"><ShieldCheck size={12} />Private by design. Powered by your browser.<span className="footnote-separator">·</span><span>Always check the sources.</span></p>
           {snapshot.unsaved && <p className="inline-warning" role="status">{snapshot.unsaved}</p>}
         </div>
       </div>}
-      <footer className="workspace-footer"><span>LESS GUESSWORK. MORE GROUNDING.</span><span>Built with DuckDB & a little curiosity<ArrowUpRight size={11} /></span></footer>
     </main>
     {setupTab && <SetupPanel runtime={runtime} tab={setupTab} onTab={setSetupTab} onChoose={corpus => { choose(corpus); setView('chat'); setSidebarOpen(false); }} onClose={() => setSetupTab(null)} />}
     {source && <SourcePanel selection={source} onClose={() => setSource(null)} />}
@@ -185,21 +182,20 @@ function Welcome({ selected, resources, onSelect }: { selected: Corpus; resource
     const media = gsap.matchMedia();
     media.add('(prefers-reduced-motion: no-preference)', () => {
       gsap.timeline({ defaults: { duration: 0.55, ease: 'power3.out' } })
-        .from('.welcome-eyebrow, .welcome-title, .welcome-description', { y: 15, autoAlpha: 0, stagger: 0.075 })
+        .from('.welcome-title, .welcome-description', { y: 15, autoAlpha: 0, stagger: 0.075 })
         .from('.collection-card', { y: 14, autoAlpha: 0, stagger: 0.07 }, '-=0.3');
     }, container);
     return () => media.revert();
   }, { scope: container });
   return <div ref={container} className="welcome">
-    <div className="welcome-eyebrow"><span className="eyebrow-line" />YOUR KNOWLEDGE, CONNECTED<span className="eyebrow-line" /></div>
-    <h1 className="welcome-title">Good questions.<br /><span>Grounded answers.</span></h1>
-    <p className="welcome-description">A quieter space to explore, connect, and understand.<br className="desktop-break" /> Pick a collection. Follow your curiosity.</p>
-    <div className="collection-picker" aria-label="Choose your collection">{(['nfcorpus', 'msmarco'] as const).map((corpus, index) => {
+    <h1 className="welcome-title">Ask your <span>documents.</span></h1>
+    <p className="welcome-description">Choose a collection to start.</p>
+    <div className="collection-picker" aria-label="Choose your collection">{(['nfcorpus', 'msmarco'] as const).map(corpus => {
       const item = COLLECTIONS[corpus]; const Icon = item.icon; const state = resources[corpus];
       return <button key={corpus} className={`collection-card ${selected === corpus ? 'collection-selected' : ''}`} onClick={() => onSelect(corpus)} aria-label={`Use ${item.name}`} aria-pressed={selected === corpus}>
-        <div className="collection-card-top"><span className="collection-category"><span>0{index + 1}</span>{item.label}</span><span className="selection-indicator">{selected === corpus && <Check size={10} strokeWidth={3} />}</span></div>
+        <div className="collection-card-top"><span className="selection-indicator">{selected === corpus && <Check size={10} strokeWidth={3} />}</span></div>
         <div className="collection-card-name"><Icon size={21} strokeWidth={1.4} /><h2>{item.name}</h2></div><p>{item.description}</p>
-        <div className="collection-card-bottom"><span>{item.count}</span><span className={state.phase === 'ready' ? 'collection-is-ready' : ''}><StatusDot ready={state.phase === 'ready'} busy={isResourceBusy(state)} />{state.phase === 'ready' ? 'Ready' : state.phase === 'saved' ? 'Saved' : 'Local index'}</span></div>
+        <div className="collection-card-bottom"><span>{item.count}</span><span className={state.phase === 'ready' ? 'collection-is-ready' : ''}><StatusDot ready={state.phase === 'ready'} busy={isResourceBusy(state)} />{stateLabel(state)}</span></div>
       </button>;
     })}</div>
   </div>;
@@ -222,10 +218,10 @@ function Composer({ runtime, messageRef, onSetup, onModel }: { runtime: AppRunti
   function submit() { if (canSend) void runtime.chat.send(draft); }
   return <form className={`composer ${running ? 'composer-working' : ''}`} onSubmit={event => { event.preventDefault(); if (running) runtime.chat.stop(); else submit(); }}>
     <label htmlFor={id} className="sr-only">Message</label>
-    <textarea id={id} ref={messageRef} value={draft} rows={2} placeholder={snapshot.activeOperation ? 'Keep your next question in mind…' : `What would you like to know${currentConversation(snapshot).turns.length ? ' next' : ''}?`} onChange={event => runtime.conversations.setDraft(event.target.value)}
+    <textarea id={id} ref={messageRef} value={draft} rows={2} placeholder={currentConversation(snapshot).turns.length ? 'Ask another question…' : 'Ask a question…'} onChange={event => runtime.conversations.setDraft(event.target.value)}
       onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); submit(); } }} aria-invalid={tooLong} aria-describedby={`${id}-help`} />
     <div className="composer-toolbar"><div className="composer-tools"><button type="button" className="composer-collection" onClick={onSetup}><Database size={13} />{COLLECTIONS[snapshot.selected].name}<ChevronDown size={12} /></button><span className="toolbar-divider" /><button type="button" className={`model-mode ${runtime.model.ready ? 'model-enabled' : ''}`} onClick={onModel}><Sparkles size={13} />{runtime.model.ready ? 'AI answers on' : 'Search only'}<ChevronDown size={12} /></button></div>
-      <div className="send-controls"><span id={`${id}-help`} className={`composer-hint ${tooLong ? 'length-error' : ''}`}>{tooLong ? `${draft.trim().length}/${MAX_QUESTION_LENGTH} characters` : ready ? 'Enter to send' : 'Set up to begin'}</span><button type="submit" className="send-button" aria-label={running ? 'Stop response' : 'Send message'} disabled={!running && !canSend}>{running ? <Square size={15} fill="currentColor" /> : <ArrowUp size={20} />}</button></div>
+      <div className="send-controls"><span id={`${id}-help`} className={`composer-hint ${tooLong ? 'length-error' : ''}`}>{tooLong ? `${draft.trim().length}/${MAX_QUESTION_LENGTH} characters` : ready ? 'Enter to send' : ''}</span><button type="submit" className="send-button" aria-label={running ? 'Stop response' : 'Send message'} disabled={!running && !canSend}>{running ? <Square size={15} fill="currentColor" /> : <ArrowUp size={20} />}</button></div>
     </div>
   </form>;
 }
@@ -235,8 +231,7 @@ function CollectionNudge({ runtime, corpus }: { runtime: AppRuntime; corpus: Cor
   const state = resources.resources[corpus]; const busy = isResourceBusy(state);
   return <div className={`collection-nudge ${['error', 'unsupported'].includes(state.phase) ? 'nudge-error' : ''}`}>
     <span className="nudge-icon">{busy ? <RefreshCw size={15} className="spin" /> : <ArrowDownToLine size={16} />}</span>
-    <div><strong>{busy ? stateLabel(state) : state.phase === 'unsupported' ? 'A browser with local storage is needed' : state.phase === 'error' ? 'Let’s get your collection ready' : state.phase === 'saved' ? 'Your index is saved on this device' : 'A little setup. A lot to discover.'}</strong>
-      <p>{busy || ['error', 'unsupported'].includes(state.phase) ? state.message : corpus === 'nfcorpus' ? 'Prepare NFCorpus once, then explore 3,633 research documents.' : 'Download the 3.35 GB MS MARCO index to search on your device.'}</p>
+    <div><p role="status">{busy || ['error', 'unsupported'].includes(state.phase) ? state.message : state.phase === 'saved' ? 'Open the saved index to start searching.' : corpus === 'nfcorpus' ? 'Prepare this collection to start searching.' : 'Download the 3.35 GB index to start searching.'}</p>
       {state.progress !== undefined && busy && <progress aria-label="Index download progress" value={state.progress} max={100} />}
     </div><CollectionAction runtime={runtime} corpus={corpus} compact />
   </div>;
@@ -244,7 +239,7 @@ function CollectionNudge({ runtime, corpus }: { runtime: AppRuntime; corpus: Cor
 
 function CollectionAction({ runtime, corpus, compact = false }: { runtime: AppRuntime; corpus: Corpus; compact?: boolean }) {
   const resources = useStore(runtime.states.state); const state = resources.resources[corpus];
-  if (state.phase === 'ready') return <span className="ready-label"><Check size={13} />Ready on device</span>;
+  if (state.phase === 'ready') return <span className="ready-label"><Check size={13} />Ready</span>;
   if (state.phase === 'downloading') return <button className="text-button" onClick={() => runtime.cancelDownload()}>Cancel download</button>;
   const busy = isResourceBusy(state);
   const label = busy ? 'Please wait' : corpus === 'nfcorpus' ? 'Prepare NFCorpus' : state.savedAvailable || state.phase === 'saved' ? 'Open saved index' : 'Download MS MARCO';
@@ -283,19 +278,18 @@ const Turn = memo(function Turn({ turn, latest, conversationId, runtime, onSourc
   }
   return <article className="chat-turn" ref={row} aria-label="Question and reply" data-phase={turn.phase} data-conversation={conversationId}>
     <div className="user-message"><span className="speaker-label">YOU</span><p>{turn.question}</p></div>
-    <div className="assistant-message"><div className="assistant-avatar"><BrandMark small /></div><div className="assistant-body"><div className="assistant-label">ragbox<span>GROUNDED IN YOUR COLLECTION</span></div>
+    <div className="assistant-message"><div className="assistant-avatar"><BrandMark small /></div><div className="assistant-body"><div className="assistant-label">ragbox</div>
       {turn.thinking && <details className="thinking"><summary><Sparkles size={13} />{working && !turn.answer ? 'Thinking…' : 'Reasoning'}<ChevronDown size={13} /></summary><p>{turn.thinking}</p></details>}
       {turn.answer && <div className="answer-text"><AnswerText text={turn.answer} documents={turn.results} includedIds={turn.includedIds} onSource={document => onSource({ turnId: turn.id, document })} /></div>}
-      {!turn.answer && turn.phase === 'blocked' && <div className="search-summary"><h3>{turn.results.length ? 'Here’s what your collection has to say.' : 'No matching documents found.'}</h3><p>{turn.results.length ? `Found ${turn.results.length} relevant ${turn.results.length === 1 ? 'source' : 'sources'}. Explore ${turn.results.length === 1 ? 'it' : 'them'} below, or enable the local model for a cited answer.` : 'Try a more specific question or a few different keywords.'}</p></div>}
+      {!turn.answer && turn.phase === 'blocked' && !turn.results.length && <p className="turn-status">No matching sources. Try different keywords.</p>}
       {(working || turn.phase === 'error' || turn.phase === 'stopped') && <div className={`turn-status ${turn.phase === 'error' ? 'inline-warning' : ''}`} role="status">{working && <span className="working-indicator"><i /><i /><i /></span>}{turn.message}</div>}
-      {turn.contextLimited && <p className="context-note">Using recent conversation context within the model’s limit.</p>}
-      {turn.results.length > 0 && <div className="sources-block"><button className="sources-toggle" aria-label={`${turn.results.length} ${turn.results.length === 1 ? 'source' : 'sources'}`} aria-expanded={sourcesOpen} aria-controls={sourceListId} onClick={() => setSourcesOpen(value => !value)}><span className="source-icons"><FileText size={12} /><FileText size={12} /><FileText size={12} /></span>{turn.results.length} {turn.results.length === 1 ? 'source' : 'sources'}{turn.elapsedMs !== undefined && <span className="source-time">{turn.elapsedMs.toFixed(0)} ms</span>}<ChevronDown size={14} className={sourcesOpen ? 'chevron-open' : ''} /></button>
+      {turn.contextLimited && <p className="context-note">Only recent messages were used.</p>}
+      {turn.results.length > 0 && <div className="sources-block"><button className="sources-toggle" aria-label={`${turn.results.length} ${turn.results.length === 1 ? 'source' : 'sources'}`} aria-expanded={sourcesOpen} aria-controls={sourceListId} onClick={() => setSourcesOpen(value => !value)}><span className="source-icons"><FileText size={12} /><FileText size={12} /><FileText size={12} /></span>{turn.results.length} {turn.results.length === 1 ? 'source' : 'sources'}<ChevronDown size={14} className={sourcesOpen ? 'chevron-open' : ''} /></button>
         {sourcesOpen && <SourceList id={sourceListId} turn={turn} onSource={document => onSource({ turnId: turn.id, document })} />}
       </div>}
       <div className="answer-actions">{turn.answer && <button className="text-button" onClick={() => void copy()} aria-label="Copy answer">{copied === 'Copied' ? <Check size={13} /> : <Copy size={13} />}{copied || 'Copy'}</button>}
         {latest && ['error', 'stopped', 'blocked'].includes(turn.phase) && <button className="text-button" disabled={active || busy || !runtime.chat.canSend()} onClick={() => void runtime.chat.retry()}><RefreshCw size={13} />Retry</button>}
         {turn.phase === 'blocked' && !runtime.model.ready && <button className="text-button answer-model-action" onClick={onModel}><Sparkles size={13} />Enable AI answers<ArrowUpRight size={12} /></button>}
-        {turn.keywordOnly && <span className="keyword-label">Keyword search</span>}
       </div>
     </div></div>
   </article>;
@@ -320,7 +314,7 @@ function SourceList({ id, turn, onSource }: { id: string; turn: ChatTurn; onSour
     media.add('(prefers-reduced-motion: no-preference)', () => { gsap.from('.source-card', { autoAlpha: 0, y: 6, stagger: 0.035, duration: 0.25 }); }, root);
     return () => media.revert();
   }, { scope: root });
-  return <div className="source-list" id={id} ref={root}><p className="source-query"><Search size={12} />{turn.searchQuery ?? turn.question}</p>{turn.results.map((document, index) => <button className="source-card" key={document.id} onClick={() => onSource(document)}><span className="source-number">{index + 1}</span><span><strong>{document.title}</strong><span className="source-excerpt">{document.text.slice(0, 165)}{document.text.length > 165 ? '…' : ''}</span><span className="source-metadata">{document.id} <span>·</span> BM25 {document.score.toFixed(3)}</span></span><ArrowUpRight size={14} /></button>)}</div>;
+  return <div className="source-list" id={id} ref={root}><p className="source-query"><Search size={12} />{turn.searchQuery ?? turn.question}</p>{turn.results.map((document, index) => <button className="source-card" key={document.id} onClick={() => onSource(document)}><span className="source-number">{index + 1}</span><span><strong>{document.title}</strong><span className="source-excerpt">{document.text.slice(0, 165)}{document.text.length > 165 ? '…' : ''}</span><span className="source-metadata">{document.id}</span></span><ArrowUpRight size={14} /></button>)}</div>;
 }
 
 function Library({ runtime, selected, onSelect, onModel }: { runtime: AppRuntime; selected: Corpus; onSelect(corpus: Corpus): void; onModel(): void }) {
@@ -331,20 +325,19 @@ function Library({ runtime, selected, onSelect, onModel }: { runtime: AppRuntime
     media.add('(prefers-reduced-motion: no-preference)', () => { gsap.from('.library-heading, .library-card, .library-model', { autoAlpha: 0, y: 12, stagger: 0.07, duration: 0.45 }); }, root);
     return () => media.revert();
   }, { scope: root });
-  return <div className="library" ref={root}><div className="library-heading"><span className="eyebrow">A PLACE FOR YOUR CURIOSITY</span><h1>Your knowledge library<span>.</span></h1><p>Two collections. Millions of connections.<br />Download once and explore right here, on your device.</p></div>
-    <div className="library-grid">{(['nfcorpus', 'msmarco'] as const).map((corpus, index) => {
+  return <div className="library" ref={root}><div className="library-heading"><h1>Collections</h1><p>Download a collection to search and chat.</p></div>
+    <div className="library-grid">{(['nfcorpus', 'msmarco'] as const).map(corpus => {
       const data = COLLECTIONS[corpus]; const Icon = data.icon; const state = resources.resources[corpus];
-      return <article className="library-card" key={corpus}><button className="library-card-art" aria-label={`Use ${data.name}`} onClick={() => onSelect(corpus)}><Icon size={56} strokeWidth={0.8} /><span className="art-cross art-cross-one">+</span><span className="art-cross art-cross-two">+</span><span className="art-index">COLLECTION / 0{index + 1}<ArrowUpRight size={11} /></span></button><div className="library-card-content"><span className="eyebrow">{data.label}</span><h2>{data.name}</h2><p>{data.description}</p><div className="library-stats"><span><FileText size={13} />{data.count}</span><span><HardDrive size={13} />{data.size}</span></div><div className="library-state"><StatusDot ready={state.phase === 'ready'} busy={isResourceBusy(state)} />{stateLabel(state)}</div>
+      return <article className="library-card" key={corpus}><button className="library-card-art" aria-label={`Use ${data.name}`} onClick={() => onSelect(corpus)}><Icon size={56} strokeWidth={0.8} /><span className="art-cross art-cross-one">+</span><span className="art-cross art-cross-two">+</span><span className="art-index"><ArrowUpRight size={14} /></span></button><div className="library-card-content"><h2>{data.name}</h2><p>{data.description}</p><div className="library-stats"><span><FileText size={13} />{data.count}</span><span><HardDrive size={13} />{data.size}</span></div><div className="library-state"><StatusDot ready={state.phase === 'ready'} busy={isResourceBusy(state)} />{stateLabel(state)}</div>
         {state.phase === 'error' && <p className="inline-warning" role="status">{state.message}</p>}
         {state.progress !== undefined && <progress aria-label={`${data.name} download progress`} value={state.progress} max={100} />}
-        <div className="library-card-actions">{state.phase === 'ready' ? <button className="primary-button" onClick={() => onSelect(corpus)}>Start exploring<ArrowRight size={15} /></button> : <CollectionAction runtime={runtime} corpus={corpus} />}{selected === corpus && <span className="selected-label"><Check size={12} />Selected</span>}</div></div></article>;
+        <div className="library-card-actions">{state.phase === 'ready' ? <button className="primary-button" onClick={() => onSelect(corpus)}>Start chat<ArrowRight size={15} /></button> : <CollectionAction runtime={runtime} corpus={corpus} />}{selected === corpus && <span className="selected-label"><Check size={12} />Selected</span>}</div></div></article>;
     })}</div>
-    <button className="library-model" onClick={onModel}><span className="model-art-icon"><Sparkles size={21} /></span><span><strong>Go from finding to understanding.</strong><span>Add the local answer model for conversational answers with citations.</span></span><ArrowUpRight size={19} /></button>
-    <div className="library-privacy"><ShieldCheck size={17} /><p>Your indexes, model, and conversations stay in this browser.<br />No account, server, or subscription required.</p></div>
+    <button className="library-model" onClick={onModel}><span className="model-art-icon"><Sparkles size={21} /></span><span><strong>Enable AI answers</strong><span>Optional model · 1.84 GB</span></span><ArrowUpRight size={19} /></button>
   </div>;
 }
 
-function Modal({ title, eyebrow, children, onClose, className = '' }: { title: string; eyebrow: string; children: ReactNode; onClose(): void; className?: string }) {
+function Modal({ title, children, onClose, className = '' }: { title: string; children: ReactNode; onClose(): void; className?: string }) {
   const root = useRef<HTMLDialogElement>(null); const heading = useId();
   useEffect(() => {
     const dialog = root.current; dialog?.showModal();
@@ -359,25 +352,25 @@ function Modal({ title, eyebrow, children, onClose, className = '' }: { title: s
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { onClose(); return; }
     gsap.to(root.current?.querySelector('.sheet') ?? [], { x: 20, autoAlpha: 0, duration: 0.18, ease: 'power2.in', onComplete: onClose });
   });
-  return <dialog className={`panel-dialog ${className}`} ref={root} aria-labelledby={heading} onCancel={event => { event.preventDefault(); close(); }} onClick={event => { if (event.target === event.currentTarget) close(); }}><section className="sheet"><header className="sheet-header"><div><span className="eyebrow">{eyebrow}</span><h2 id={heading}>{title}</h2></div><button className="icon-button sheet-close" aria-label="Close panel" onClick={close}><X size={19} /></button></header>{children}</section></dialog>;
+  return <dialog className={`panel-dialog ${className}`} ref={root} aria-labelledby={heading} onCancel={event => { event.preventDefault(); close(); }} onClick={event => { if (event.target === event.currentTarget) close(); }}><section className="sheet"><header className="sheet-header"><h2 id={heading}>{title}</h2><button className="icon-button sheet-close" aria-label="Close panel" onClick={close}><X size={19} /></button></header>{children}</section></dialog>;
 }
 
 function SetupPanel({ runtime, tab, onTab, onChoose, onClose }: { runtime: AppRuntime; tab: SetupTab; onTab(tab: SetupTab): void; onChoose(corpus: Corpus): void; onClose(): void }) {
   const resources = useStore(runtime.states.state); const model = resources.resources.model;
-  return <Modal title="Make yourself at home." eyebrow="WORKSPACE SETUP" onClose={onClose}><div className="setup-tabs" role="tablist" aria-label="Setup sections">{([['collections', Database, 'Collections'], ['model', Sparkles, 'Answer model'], ['storage', HardDrive, 'Storage']] as const).map(([name, Icon, label]) => <button key={name} role="tab" aria-selected={tab === name} tabIndex={tab === name ? 0 : -1} onClick={() => onTab(name)} onKeyDown={event => {
+  return <Modal title="Workspace setup" onClose={onClose}><div className="setup-tabs" role="tablist" aria-label="Setup sections">{([['collections', Database, 'Collections'], ['model', Sparkles, 'Answer model'], ['storage', HardDrive, 'Storage']] as const).map(([name, Icon, label]) => <button key={name} role="tab" aria-selected={tab === name} tabIndex={tab === name ? 0 : -1} onClick={() => onTab(name)} onKeyDown={event => {
     const names = ['collections', 'model', 'storage'] as const;
     const index = names.indexOf(name);
     const next = event.key === 'ArrowRight' ? names[(index + 1) % names.length] : event.key === 'ArrowLeft' ? names[(index + names.length - 1) % names.length] : event.key === 'Home' ? names[0] : event.key === 'End' ? names[2] : undefined;
     if (next) { event.preventDefault(); onTab(next); document.getElementById(`setup-tab-${next}`)?.focus(); }
   }} id={`setup-tab-${name}`} aria-controls={`setup-panel-${name}`}><Icon size={14} />{label}</button>)}</div>
     <div className="sheet-content" role="tabpanel" id={`setup-panel-${tab}`} aria-labelledby={`setup-tab-${tab}`} tabIndex={0}>
-      {tab === 'collections' && <><p className="panel-intro">Start small or explore the whole web. Each collection is indexed and searched locally.</p>{(['nfcorpus', 'msmarco'] as const).map(corpus => <SetupCollection key={corpus} runtime={runtime} corpus={corpus} onSelect={() => { onChoose(corpus); onClose(); }} />)}<div className="panel-info"><ShieldCheck size={17} /><p>Downloads are saved in this browser. Use the same browser and address to find them next time.</p></div></>}
-      {tab === 'model' && <><div className="model-hero"><span className="model-hero-icon"><Sparkles size={30} strokeWidth={1.2} /></span><span className="eyebrow">MEET YOUR LOCAL THINKING PARTNER</span><h3>Answers with a paper trail.</h3><p>Turn retrieved documents into clear, conversational answers. Every response is grounded in sources you can inspect.</p></div>
-        <div className="model-spec"><Cpu size={18} /><div><strong>MiniCPM5 · 2B</strong><span>Runs on your GPU · ~1.84 GB download</span></div><span className="subtle-tag">LOCAL</span></div>
-        <div className="model-status" role="status"><StatusDot ready={runtime.model.ready} busy={model.phase === 'loading' || model.phase === 'checking'} /><span>{model.message}</span></div>
+      {tab === 'collections' && <>{(['nfcorpus', 'msmarco'] as const).map(corpus => <SetupCollection key={corpus} runtime={runtime} corpus={corpus} onSelect={() => { onChoose(corpus); onClose(); }} />)}</>}
+      {tab === 'model' && <><div className="model-hero"><span className="model-hero-icon"><Sparkles size={30} strokeWidth={1.2} /></span><p>Generate cited answers from your sources.</p></div>
+        <div className="model-spec"><Cpu size={18} /><div><strong>MiniCPM5 · 2B</strong><span>Requires a supported GPU · ~1.84 GB download</span></div></div>
+        {model.message && <div className="model-status" role="status"><StatusDot ready={runtime.model.ready} busy={model.phase === 'loading' || model.phase === 'checking'} /><span>{model.message}</span></div>}
         {model.model?.stage === 'downloading' && <div className="model-downloaded">{formatBytes(model.model.downloadedBytes)} downloaded</div>}
-        {model.phase === 'loading' ? <><progress aria-label="Loading answer model" /><button className="secondary-button full-width" onClick={() => runtime.model.cancelLoad()}>Cancel {model.model?.stage === 'downloading' ? 'download' : 'loading'}</button></> : runtime.model.ready ? <div className="model-ready-note"><Check size={16} />You’re ready for grounded conversations.</div> : <button className="primary-button full-width" disabled={['unsupported', 'checking'].includes(model.phase) || resources.shuttingDown} onClick={() => void runtime.loadModel()}><ArrowDownToLine size={16} />{runtime.model.loadAction()}</button>}
-        <div className="panel-info"><CircleHelp size={17} /><p>{model.phase === 'unsupported' ? 'You can still search both collections and read all retrieved sources. AI answers need a browser and GPU with WebGPU and shader-f16 support.' : 'The model is optional. Keyword search works without it. A supported WebGPU browser and enough free storage are required.'}</p></div>
+        {model.phase === 'loading' ? <><progress aria-label="Loading answer model" /><button className="secondary-button full-width" onClick={() => runtime.model.cancelLoad()}>Cancel {model.model?.stage === 'downloading' ? 'download' : 'loading'}</button></> : runtime.model.ready ? <div className="model-ready-note"><Check size={16} />Ready</div> : <button className="primary-button full-width" disabled={['unsupported', 'checking'].includes(model.phase) || resources.shuttingDown} onClick={() => void runtime.loadModel()}><ArrowDownToLine size={16} />{runtime.model.loadAction()}</button>}
+        <div className="panel-info"><CircleHelp size={17} /><p>Source search works without the model.</p></div>
       </>}
       {tab === 'storage' && <StoragePanel runtime={runtime} />}
     </div>
@@ -388,7 +381,7 @@ function SetupCollection({ runtime, corpus, onSelect }: { runtime: AppRuntime; c
   const state = useStore(runtime.states.state, snapshot => snapshot.resources[corpus]);
   const selected = useStore(runtime.conversations.state, snapshot => snapshot.selected === corpus);
   const collection = COLLECTIONS[corpus]; const Icon = collection.icon;
-  return <article className="setup-collection"><div className="setup-collection-title"><span className="setup-collection-icon"><Icon size={22} strokeWidth={1.4} /></span><div><h3>{collection.name}</h3><span>{collection.count} · {collection.size}</span></div></div><p>{collection.description}</p><div className="collection-state-line"><StatusDot ready={state.phase === 'ready'} busy={isResourceBusy(state)} />{stateLabel(state)}</div>
+  return <article className="setup-collection"><div className="setup-collection-title"><span className="setup-collection-icon"><Icon size={22} strokeWidth={1.4} /></span><div><h3>{collection.name}</h3><span>{collection.count} · {collection.size}</span></div></div><p>{collection.description}</p>{state.phase !== 'ready' && <div className="collection-state-line"><StatusDot busy={isResourceBusy(state)} />{stateLabel(state)}</div>}
     {['error', 'unsupported'].includes(state.phase) && <p className="inline-warning" role="status">{state.message}</p>}
     {isResourceBusy(state) && <><p className="resource-detail" role="status">{state.message}</p><progress aria-label={`${collection.name} progress`} value={state.progress} max={100} /></>}
     <div className="setup-collection-actions"><CollectionAction runtime={runtime} corpus={corpus} /><button className="text-button" aria-label={`Use ${collection.name}`} aria-pressed={selected} onClick={onSelect}>{selected ? <Check size={13} /> : <ArrowRight size={13} />}{selected ? 'Selected' : 'Use for chat'}</button></div>
@@ -413,18 +406,18 @@ function StoragePanel({ runtime }: { runtime: AppRuntime }) {
     try {
       const success = action === 'chats' ? await runtime.chat.clear().then(() => true)
         : action === 'model' ? await runtime.clearModel() : await runtime.removeCollection(action as Corpus);
-      setMessage(success ? 'Done. Your browser storage has been updated.' : 'This action could not finish. Check the resource status and try again.');
-    } catch { setMessage('This action could not finish. Please try again.'); }
+      setMessage(success ? 'Deleted.' : 'Could not delete. Check the resource status.');
+    } catch { setMessage('Could not delete. Try again.'); }
     finally { setWorking(false); setConfirmAction(null); }
   }
-  return <><p className="panel-intro">Your workspace lives here. Keep what you need, make room when you don’t.</p><div className="storage-summary"><HardDrive size={24} strokeWidth={1.3} /><span className="eyebrow">BROWSER STORAGE</span><strong>{estimate?.usage !== undefined ? formatBytes(estimate.usage) : 'Stored on this device'}</strong><p>{estimate?.quota ? `of ${formatBytes(estimate.quota)} available to this browser` : 'Storage estimates aren’t available in this browser.'}</p>{estimate?.quota && <progress aria-label="Browser storage used" value={estimate.usage ?? 0} max={estimate.quota} />}</div>
-    <div className="retention-row"><div><strong>{retained ? 'Storage protection is enabled' : 'Keep your workspace around'}</strong><p>Ask your browser to retain downloaded files.</p></div><button className="secondary-button" disabled={retained === true || working} onClick={() => { void navigator.storage?.persist?.().then(value => { setRetained(value); setMessage(value ? 'Storage protection enabled.' : 'The browser did not grant persistent storage.'); }).catch(() => setMessage('Storage protection is unavailable.')); }}>{retained ? <Check size={14} /> : 'Protect'}</button></div>
-    <div className="storage-items">{([['nfcorpus', 'NFCorpus index', 'Rebuild the small index anytime.'], ['msmarco', 'MS MARCO index', 'Remove the saved 3.35 GB download.'], ['model', 'Answer model', 'Remove cached model files.'], ['chats', 'Conversations', `${savedConversations(snapshot).length} saved conversations in this browser.`]] as const).map(([key, label, description]) => <div className="storage-item" key={key}><span><strong>{label}</strong><span>{description}</span></span>{confirmAction === key ? <div className="delete-confirm"><button className="danger-button" disabled={disabled} onClick={() => void remove(key)}>Delete</button><button className="icon-button" aria-label="Cancel deletion" onClick={() => setConfirmAction(null)}><X size={15} /></button></div> : <button className="icon-button delete-button" disabled={disabled} aria-label={`Delete ${label}`} onClick={() => setConfirmAction(key)}><Trash2 size={15} /></button>}</div>)}</div>
-    {message && <p className="resource-detail" role="status">{message}</p>}<div className="panel-info"><ShieldCheck size={17} /><p>Deleting an index leaves your saved conversations and source snapshots intact. Browser data is specific to this address and profile.</p></div>
+  return <><div className="storage-summary"><HardDrive size={24} strokeWidth={1.3} /><span className="eyebrow">BROWSER STORAGE</span><strong>{estimate?.usage !== undefined ? formatBytes(estimate.usage) : 'Unavailable'}</strong><p>{estimate?.quota ? `of ${formatBytes(estimate.quota)}` : 'Storage estimate unavailable.'}</p>{estimate?.quota && <progress aria-label="Browser storage used" value={estimate.usage ?? 0} max={estimate.quota} />}</div>
+    <div className="retention-row"><div><strong>{retained ? 'Downloads protected' : 'Keep downloads'}</strong><p>Reduce automatic browser cleanup.</p></div><button className="secondary-button" disabled={retained === true || working} onClick={() => { void navigator.storage?.persist?.().then(value => { setRetained(value); setMessage(value ? 'Downloads protected.' : 'The browser did not grant persistent storage.'); }).catch(() => setMessage('Storage protection is unavailable.')); }}>{retained ? <Check size={14} /> : 'Protect'}</button></div>
+    <div className="storage-items">{([['nfcorpus', 'NFCorpus index', '3,633 documents'], ['msmarco', 'MS MARCO index', '3.35 GB'], ['model', 'Answer model', 'Local model files'], ['chats', 'Conversations', `${savedConversations(snapshot).length} saved`]] as const).map(([key, label, description]) => <div className="storage-item" key={key}><span><strong>{label}</strong><span>{description}</span></span>{confirmAction === key ? <div className="delete-confirm"><button className="danger-button" disabled={disabled} onClick={() => void remove(key)}>Delete</button><button className="icon-button" aria-label="Cancel deletion" onClick={() => setConfirmAction(null)}><X size={15} /></button></div> : <button className="icon-button delete-button" disabled={disabled} aria-label={`Delete ${label}`} onClick={() => setConfirmAction(key)}><Trash2 size={15} /></button>}</div>)}</div>
+    {message && <p className="resource-detail" role="status">{message}</p>}<div className="panel-info"><ShieldCheck size={17} /><p>Deleting an index keeps saved chats and sources. Downloads belong to this browser and address.</p></div>
   </>;
 }
 
 function SourcePanel({ selection, onClose }: { selection: SourceSelection; onClose(): void }) {
   const { document } = selection;
-  return <Modal title="A closer look." eyebrow="RETRIEVED EVIDENCE" onClose={onClose} className="source-dialog"><div className="sheet-content"><div className="source-document-meta"><span><FileText size={13} />{document.id}</span><span>BM25 {document.score.toFixed(4)}</span></div><h3 className="source-document-title">{document.title}</h3><div className="source-document-text">{document.text}</div><div className="panel-info"><BookOpen size={17} /><p>This is the source snapshot saved with this reply. Check the original evidence when interpreting an answer.</p></div></div></Modal>;
+  return <Modal title="Source" onClose={onClose} className="source-dialog"><div className="sheet-content"><div className="source-document-meta"><span><FileText size={13} />{document.id}</span><span>BM25 {document.score.toFixed(4)}</span></div><h3 className="source-document-title">{document.title}</h3><div className="source-document-text">{document.text}</div><div className="panel-info"><BookOpen size={17} /><p>Saved with this reply.</p></div></div></Modal>;
 }

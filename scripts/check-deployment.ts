@@ -62,7 +62,7 @@ page.on('pageerror', error => errors.push(error.message));
 await context.tracing.start({ screenshots: true, snapshots: true });
 try {
   await page.goto(site.href, { waitUntil: 'networkidle', timeout: 60_000 });
-  await expect(page.getByRole('heading', { name: 'Good questions. Grounded answers.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Ask your documents.' })).toBeVisible();
   await expect(page.locator('.workspace')).toHaveCSS('background-color', 'rgb(20, 21, 20)');
   await expect(page.getByRole('button', { name: 'Use NFCorpus', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Use MS MARCO', exact: true })).toBeVisible();

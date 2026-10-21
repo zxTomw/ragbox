@@ -119,7 +119,7 @@ test('opens and searches a real saved MS MARCO database and returns from setup t
   await page.getByRole('button', { name: 'Collections', exact: true }).click();
   await page.getByRole('button', { name: 'Workspace setup', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Use MS MARCO', exact: true }).click();
-  await expect(page.getByText('YOUR CONVERSATION', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'solar panels', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '1 source', exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -129,7 +129,7 @@ test('keeps mobile navigation and setup keyboard-accessible with reduced motion'
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const errors = pageErrors(page);
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Good questions. Grounded answers.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Ask your documents.' })).toBeVisible();
   expect(await page.locator('.welcome-title').evaluate(element => getComputedStyle(element).opacity)).toBe('1');
   expect(await page.locator('.welcome-title').evaluate(element => getComputedStyle(element).transform)).toBe('none');
 
@@ -148,7 +148,7 @@ test('keeps mobile navigation and setup keyboard-accessible with reduced motion'
 
   await open.click();
   await page.getByRole('button', { name: 'Collections', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Your knowledge library.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Collections', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
   await page.getByRole('button', { name: 'About local answers', exact: true }).click();
   const modelTab = page.getByRole('tab', { name: 'Answer model', exact: true });
