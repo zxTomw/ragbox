@@ -1,5 +1,6 @@
 import * as duckdb from '@duckdb/duckdb-wasm';
 import { rowsAs } from './boundaries.ts';
+import { createLocalDuckDB } from './duckdb-bundle.ts';
 export const PREBUILT_NAME = 'msmarco-prebuilt.duckdb';
 
 // Copy via streams directly into OPFS, without buffering a multi-GB file in JS.
@@ -13,15 +14,9 @@ export async function openPrebuilt() {
   // Check existence: do not silently create an empty database on reopen.
   const root = await navigator.storage.getDirectory();
   await root.getFileHandle(PREBUILT_NAME);
-  const bundle = await duckdb.selectBundle(duckdb.getJsDelivrBundles());
-  const url = URL.createObjectURL(new Blob([
-    `importScripts(${JSON.stringify(bundle.mainWorker)});`,
-  ], { type: 'text/javascript' }));
-  const worker = new Worker(url);
-  const db = new duckdb.AsyncDuckDB(new duckdb.ConsoleLogger(), worker);
+  const db = await createLocalDuckDB();
   let conn: duckdb.AsyncDuckDBConnection | undefined;
   try {
-    await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
     await db.open({ path: `opfs://${PREBUILT_NAME}`, accessMode: duckdb.DuckDBAccessMode.READ_ONLY });
     conn = await db.connect();
     await conn.query('INSTALL fts; LOAD fts');
@@ -37,7 +32,5 @@ export async function openPrebuilt() {
     if (conn) await conn.close().catch(() => {});
     await db.terminate().catch(() => {});
     throw error;
-  } finally {
-    URL.revokeObjectURL(url);
   }
 }

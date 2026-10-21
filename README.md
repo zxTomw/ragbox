@@ -1,33 +1,33 @@
 # RAGbox
 
-RAGbox is a document chatbot that runs in the browser. DuckDB-Wasm retrieves BM25 matches from NFCorpus or MS MARCO, and an optional local MiniCPM model generates streamed answers with citations. Follow-up questions retrieve fresh evidence using recent conversation context. Retrieval and inference run on the device, without an inference server, API key, or document upload.
+RAGbox is a browser document chatbot with a dark React interface and GSAP transitions. DuckDB-Wasm retrieves BM25 matches from NFCorpus or MS MARCO, and an optional local MiniCPM model generates streamed answers with citations. Follow-up questions retrieve fresh evidence using recent conversation context. Retrieval and inference run on the device, without an inference server, API key, or document upload.
 
 ## Quick start
 
-Requirements: Node.js `^22.12.0` or `>=24.0.0`, npm, and a browser with OPFS support. Desktop Chrome is the tested target. The optional answer model additionally requires WebGPU with `shader-f16`. Network access is needed for runtime assets and collection/model downloads.
+Requirements: Node.js `^22.12.0` or `>=24.0.0`, npm, and a browser with OPFS support. Desktop Chrome is the tested target. The optional answer model additionally requires WebGPU with `shader-f16`. DuckDB workers, Wasm modules, and fonts are served with the app. Network access is still needed for the DuckDB FTS extension and collection/model downloads.
 
 ```sh
-git clone https://github.com/castorini/ragbox.git
+git clone https://github.com/zxTomw/ragbox.git
 cd ragbox
 npm ci
 npm run prepare:nfcorpus -- /path/to/nfcorpus/corpus.jsonl
 npm run dev
 ```
 
-Open [http://127.0.0.1:5173/](http://127.0.0.1:5173/), select NFCorpus, and click **Prepare NFCorpus**. Submit `breast cancer` and expand **Sources** to inspect the retrieved articles. Click **Download model (~1.84 GB)** to enable cited answers on a supported GPU.
+Open [http://127.0.0.1:5173/](http://127.0.0.1:5173/), select NFCorpus, and click **Prepare NFCorpus**. Submit `breast cancer` and expand **Sources** to inspect the retrieved articles. Open **Workspace setup** to download the optional model, about 1.84 GB, and enable cited answers on a supported GPU.
 
 If you need the source dataset, follow the [installation guide](docs/installation.md#prepare-nfcorpus). Preparation validates all 3,633 BEIR documents and writes the static JSONL input; the browser builds the index. The Pages workflow includes this input in the published demo.
 
-Use the same origin and browser profile on return visits, and keep one RAGbox tab open per origin. `localhost:5173` and `127.0.0.1:5173` have separate storage. Saved indexes and model files are managed in Settings.
+Use the same origin and browser profile on return visits, and keep one RAGbox tab open per origin. `localhost:5173` and `127.0.0.1:5173` have separate storage. Open **Workspace setup** to manage saved indexes, the optional answer model, and browser storage.
 
 ## Chat with your documents
 
 - Choose **NFCorpus** for the small nutrition and medical collection, or explicitly download the **MS MARCO** prebuilt index, about 3.35 GB.
 - Search with keywords before installing the optional model. With the model ready, ask questions and contextual follow-ups, then inspect each reply's saved sources and citation links.
-- Replies answer directly, without a separate reasoning step, to keep them fast.
+- Switch collections from the chat interface or open **Collections** to prepare and manage indexes.
 - Use **Stop** to retain a partial reply and **Retry** to retry the same turn. Conversations and source snapshots persist across reloads, subject to browser storage availability.
 
-The History page is currently disabled by [HISTORY_ENABLED](src/features.ts); chats still save and restore. Citation links identify supplied evidence, but claims can still be wrong. See [chat validation](docs/chat-validation.md) for recorded browser checks and model limitations.
+Recent conversations appear in the sidebar and restore their answers and source snapshots. Citation links identify supplied evidence, but claims can still be wrong. See [chat validation](docs/chat-validation.md) for recorded browser checks and model limitations.
 
 ## Documentation
 
@@ -57,4 +57,4 @@ The build runs TypeScript checks and writes `dist/`. Use `npm run typecheck` for
 
 The [GitHub Pages workflow](.github/workflows/pages.yml) tests, prepares NFCorpus, builds for `/ragbox/`, and deploys on pushes to `main` or manual runs. Set Pages **Source** to **GitHub Actions**. See [deployment](docs/deployment.md) for other base paths and the `VITE_MSMARCO_INDEX_URL` override.
 
-Each visitor owns their browser index, model cache, and saved chats. Generated datasets, `node_modules/`, `dist/`, and browser data are excluded from Git. Runtime and extension downloads mean that local execution does not guarantee fully offline startup.
+Each visitor owns their browser index, model cache, and saved chats. Generated datasets, `node_modules/`, `dist/`, and browser data are excluded from Git. The build includes DuckDB workers and Wasm modules plus the DM Sans and Instrument Serif fonts; it does not require a third-party worker or font CDN. FTS extension and optional collection/model downloads mean that local execution does not guarantee fully offline startup.

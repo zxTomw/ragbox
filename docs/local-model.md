@@ -19,7 +19,7 @@ The model ID and revision live in [src/model-cache.ts](../src/model-cache.ts). L
 
 ## Download and load
 
-Click **Download model (~1.84 GB)** on the start page or in Settings. Downloads require an explicit action. Progress reports cumulative transferred bytes with an indeterminate bar because individual file events do not provide a reliable whole-model total. GPU initialization follows the transfer and can take additional time.
+Open **Workspace setup → Answer model** and click **Download model (~1.84 GB)**. The composer's **Search only** control opens the same panel. Downloads require an explicit action. Progress reports cumulative transferred bytes with an indeterminate bar because individual file events do not provide a reliable whole-model total. GPU initialization follows the transfer and can take additional time.
 
 Once required files are cached, later visits automatically load them on supported devices using `local_files_only`. Missing model files do not trigger an automatic download. The application stores weights in browser Cache Storage, separately from the collection databases in OPFS.
 
@@ -54,7 +54,7 @@ Use the action offered by the interface:
 
 Cache readiness requires the pinned configuration and tokenizer files, the quantized ONNX model, and seven external weight files. The readiness check validates small metadata responses without reading multi-gigabyte weight bodies. Explicit repair can discard invalid cached configuration while retaining valid weights.
 
-If recovery fails, inspect the model file listing under Settings → **Advanced file management** and use [troubleshooting](troubleshooting.md#model-and-gpu-problems). Deleting the model is available separately from deleting indexes.
+If recovery fails, inspect the status in **Workspace setup → Answer model** and use [troubleshooting](troubleshooting.md#model-and-gpu-problems). **Workspace setup → Storage** can delete the model separately from the indexes before a fresh installation.
 
 Cached inference does not make the application fully offline. Application startup and DuckDB runtime/extension loading may still require network access. There is no inference server, API key, or document upload in the answer-generation path.
 

@@ -62,7 +62,7 @@ npm run dev
 Open [http://127.0.0.1:5173/](http://127.0.0.1:5173/). The development server binds to `127.0.0.1`, uses port `5173`, and fails if that port is already occupied.
 
 1. Wait for startup checks to finish.
-2. Select the NFCorpus collection card and click **Prepare NFCorpus**. The equivalent Settings action is **Set up collection**.
+2. Select the NFCorpus collection card and click **Prepare NFCorpus**. The same action is available in **Workspace setup → Collections**.
 3. Wait for the collection to become ready with 3,633 documents.
 4. Enter `breast cancer` and submit. Expand **Sources** to inspect the retrieved articles and BM25 scores.
 5. Reload the page and search again. The saved index should reopen without importing the dataset again.
@@ -71,7 +71,7 @@ Keep one RAGbox tab open per origin. Use the same browser profile, scheme, host,
 
 ## Enable cited answers
 
-On a supported GPU, click **Download model (~1.84 GB)** on the start page or in Settings. Downloading and GPU initialization are separate stages. Once the model is ready, new messages generate cited answers, and follow-up questions can use recent conversation context.
+On a supported GPU, open **Workspace setup → Answer model** and click **Download model (~1.84 GB)**. Downloading and GPU initialization are separate stages. Once the model is ready, new messages generate cited answers, and follow-up questions can use recent conversation context.
 
 See [chatting with documents](usage-chat.md) for a walkthrough and [the model guide](local-model.md) for thinking, context limits, and recovery. The [troubleshooting guide](troubleshooting.md) covers missing datasets, unsupported browsers, and download failures.
 

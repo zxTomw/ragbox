@@ -19,7 +19,7 @@ Start with [installation](installation.md), prepare NFCorpus, and follow [chatti
 
 - [Development guide](development.md): commands, architecture, state and worker contracts, and validation.
 - [Deployment guide](deployment.md): static builds, GitHub Pages, asset paths, and MS MARCO hosting configuration.
-- [Chat implementation and validation](chat-validation.md): the existing regression checklist, recorded browser observations, and answer-quality limitations. Some observations describe earlier thinking controls or the currently disabled History page.
+- [Chat implementation and validation](chat-validation.md): the existing regression checklist, recorded browser observations, and answer-quality limitations. Some observations describe earlier thinking controls or the former History page.
 - [Experiment notes](experiments.md): the existing DuckDB OPFS experiments, native index construction, and scaling notes. This is a historical record; several controls described there have been removed from the application. Use the guides above for the current interface.
 
 ## Related Castorini projects

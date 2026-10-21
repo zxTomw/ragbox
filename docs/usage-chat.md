@@ -4,14 +4,14 @@ RAGbox supports keyword search with an optional local answer model. A collection
 
 ## Start with a collection
 
-The start page places a search box and starter questions above **Collections in this browser**. Each collection card shows its readiness and available setup action:
+The dark chat workspace shows NFCorpus and MS MARCO collection cards, a message composer, and starter questions. Choose a collection, then prepare its index from the setup action or the **Collections** view:
 
 - **NFCorpus:** click **Prepare NFCorpus** to import the prepared dataset and build its index.
-- **MS MARCO:** click **Download MS MARCO index (3.35 GB)** and confirm the download.
+- **MS MARCO:** explicitly download its prebuilt index, about 3.35 GB.
 
 Wait for the selected collection to become ready. The three starter questions are picked at random each time the page loads, from a list in [src/example-queries.ts](../src/example-queries.ts) whose questions were checked so that the top-ranked documents state the answer. A starter question submits immediately when its collection is ready; otherwise it fills the search box for later submission. After a chat starts, use the collection menu to change collections.
 
-The first-visit tour highlights collections, the optional answer model, Settings, and the search box. **Skip tour**, **Esc**, or running a search ends it. **New here? Take the tour** replays it.
+**Workspace setup** opens collection, model, and storage controls without leaving the current conversation. Recent chats remain available in the sidebar. Interface transitions respect the browser’s reduced-motion preference.
 
 ## Search without the answer model
 
@@ -19,7 +19,7 @@ Submit a query such as `breast cancer` in NFCorpus. Without a ready model, RAGbo
 
 This is useful for inspecting retrieval before installing the model. Contextual follow-ups require the model: a message such as `What did that study measure?` otherwise searches those literal words.
 
-Click **Download model (~1.84 GB)** to enable answers on a supported GPU. If the latest active turn is awaiting an answer, model loading completes that turn. When context is needed, RAGbox first resolves the query and searches again. It does not generate answers for all older saved searches.
+Open **Workspace setup** and download the optional model, about 1.84 GB, to enable answers on a supported GPU. If the latest active turn is awaiting an answer, model loading completes that turn. When context is needed, RAGbox first resolves the query and searches again. It does not generate answers for all older saved searches.
 
 ## Ask a question and a follow-up
 
@@ -41,7 +41,7 @@ Expand **Sources** below a reply to see the resolved query, retrieved document I
 
 Clicking a citation opens Sources and focuses the cited document. Only IDs from that turn's fitted model evidence become links. Unknown IDs remain text. The model may receive fewer than ten documents, or a truncated final document, because the prompt has a [token budget](local-model.md#context-and-output-limits).
 
-Replies saved while the earlier Thinking control was on show their **Reasoning** folded by default. The final answer is separate. The copy button copies only the final answer, and reasoning is excluded from follow-up history and citation linking.
+Replies that include reasoning show it folded separately from the answer. The final answer is separate. The copy button copies only the final answer, and reasoning is excluded from follow-up history and citation linking.
 
 If retrieval returns no documents, RAGbox gives an insufficient-evidence response without running answer generation. When retrieved documents are unrelated, the model is instructed to say so. The model can still misinterpret relevant material or abstain unnecessarily.
 
@@ -53,8 +53,9 @@ If retrieval returns no documents, RAGbox gives an insufficient-evidence respons
 | **Shift+Enter** | Insert a newline. |
 | **Stop** | Stop the active turn while retaining partial answer text, reasoning, sources, and valid citations. |
 | **Retry** | Retry the latest failed or stopped turn without adding a duplicate message. |
-| **New chat** or the RAGbox logo | Stop current work and open an empty chat in the selected collection. |
-| **Settings** | Open collection, model, and storage controls while ongoing work continues. |
+| **New conversation** | Stop current work and open an empty chat in the selected collection. |
+| **Workspace setup** | Open collection, model, and storage controls while ongoing work continues. |
+| **Collections** | Inspect each index and prepare, download, or open a saved collection. |
 
 Messages are limited to 500 characters. Longer drafts show a length warning and disable Send until shortened. The draft remains editable while a reply is processing. See [the model guide](local-model.md#thinking-effort) for the cost and limits of reasoning.
 
@@ -66,7 +67,7 @@ Sending a question scrolls it to the top of the screen, with the reply appearing
 
 Switching collections during a chat stops current work and restores the selected collection's active chat. Switching on the start page, before asking anything, stays on the start page with an empty chat in the new collection; earlier chats remain saved. Reloading restores saved conversations, including separate reasoning, answers, and source snapshots. An interrupted turn reopens as **Stopped** and requires an explicit retry.
 
-The **History** page is currently disabled by `HISTORY_ENABLED` in [src/features.ts](../src/features.ts). Conversations are still saved for reloads and follow-ups. If a developer enables History, it provides full-text conversation filtering, **Continue chat**, and **Clear history**. Those controls are unavailable in the default build.
+Recent conversations appear in the sidebar. Select one to reopen its saved messages and sources; this also restores its collection. The React interface exposes saved conversations directly, without a separate History page or feature flag. Open workspace setup for storage and conversation cleanup controls.
 
 See [browser storage](storage.md) for retention, storage failures, and deletion behavior.
 

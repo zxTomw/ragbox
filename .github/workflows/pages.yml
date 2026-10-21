@@ -15,8 +15,23 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
     steps:
       - uses: actions/checkout@v4
+      - name: Use the application workflow for Pages
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: site } = await github.request('GET /repos/{owner}/{repo}/pages', context.repo);
+            if (site.build_type !== 'workflow') {
+              await github.request('PUT /repos/{owner}/{repo}/pages', {
+                ...context.repo,
+                build_type: 'workflow'
+              });
+              core.info('Changed Pages from a branch/Jekyll build to the application workflow.');
+            }
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -49,7 +64,10 @@ jobs:
         env:
           PAGES_BASE: ${{ steps.pages.outputs.base_path }}
           VITE_MSMARCO_INDEX_URL: ${{ vars.MSMARCO_INDEX_URL }}
-        run: npm run build -- --base=/ragbox/
+        run: npm run build -- --base="${PAGES_BASE%/}/"
+      - name: Record the published revision
+        run: |
+          node -e 'require("node:fs").writeFileSync("dist/deployment.json", JSON.stringify({ sha: process.env.GITHUB_SHA }) + "\n")'
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
@@ -57,6 +75,8 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     permissions:
       pages: write
       id-token: write
@@ -67,3 +87,29 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
+  verify:
+    name: Verify the published application
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Check the live revision, assets, and interface
+        env:
+          DEPLOYMENT_URL: ${{ needs.deploy.outputs.page_url }}
+          DEPLOYMENT_SHA: ${{ github.sha }}
+        run: npm run check:deployment -- "$DEPLOYMENT_URL" "$DEPLOYMENT_SHA"
+      - name: Save deployment previews and browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-browser-check
+          path: artifacts/deployment/
+          if-no-files-found: ignore

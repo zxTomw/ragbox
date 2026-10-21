@@ -1,6 +1,6 @@
 # RAGbox: Browser Storage
 
-RAGbox keeps collection indexes, model files, and conversations in the browser. This guide explains their lifetime and the Settings controls that manage them.
+RAGbox keeps collection indexes, model files, and conversations in the browser. This guide explains their lifetime and the Workspace setup controls that manage them.
 
 ## Storage locations
 
@@ -10,7 +10,7 @@ RAGbox keeps collection indexes, model files, and conversations in the browser. 
 | MS MARCO | OPFS `msmarco-prebuilt.duckdb` | Downloaded document table and FTS index, opened read-only. |
 | Answer model | Browser Cache Storage | Pinned MiniCPM configuration, tokenizer, ONNX model, and weight files. |
 | Conversations | IndexedDB database `ragbox-conversations`, version 1 | Turns, answers, reasoning, retrieved source snapshots, citation metadata, and navigation preferences. |
-| Legacy history and interface preferences | localStorage | Earlier search history awaiting migration and small interface preferences such as tour state. |
+| Legacy history | localStorage | Earlier search history awaiting migration. |
 
 OPFS files are private browser-managed files. They do not appear in the Downloads folder or in the repository. `public/data/nfcorpus.jsonl` is a separate static input file used to prepare the browser database.
 
@@ -33,33 +33,32 @@ Submitted turns, retrieval snapshots, settled answers, reasoning, and valid cita
 
 Reload restores the selected collection and its active chat, or the start page if that was showing. In-progress turns become **Stopped** and require an explicit Retry; saved transcripts never restart inference automatically. Drafts and transient operation identities are not persisted. If storage fails, the current chat remains usable in memory and the interface displays an unsaved notice.
 
-Earlier `ragbox-search-history` localStorage entries import as one-turn conversations with deterministic IDs. The migration preserves timestamps, retrieved sources, answers, and stopped status. An import marker commits with the conversations to prevent duplicates. Original legacy data remains until **Clear history**.
+Earlier `ragbox-search-history` localStorage entries import as one-turn conversations with deterministic IDs. The migration preserves timestamps, retrieved sources, answers, and stopped status. An import marker commits with the conversations to prevent duplicates. Deleting **Conversations** also clears the legacy data.
 
-The History page is currently disabled by [src/features.ts](../src/features.ts). Saving, reload restoration, retention, and follow-up context still work. Enabling History adds conversation filtering, **Continue chat**, and **Clear history**.
+Recent conversations are available directly in the sidebar. Select a title to restore its saved transcript and sources. The React interface does not use the legacy History feature flag.
 
 ## Inspect saved files
 
-Open Settings to manage collections and the answer model. The **How it works** tab in the sidebar explains browser execution, BM25 retrieval, local database files, and network requirements. Link directly to it with `?view=duckdb`.
+Open **Workspace setup → Storage** to inspect estimated browser usage and quota, request persistent storage, or remove saved resources. The **Collections** and **Answer model** tabs show their current readiness and recovery actions.
 
-**Advanced file management** exposes OPFS file listings, model-cache listings, refresh controls, individual owned-file deletion, and MS MARCO replacement.
+The simplified interface manages complete collection indexes and the model cache rather than exposing individual browser files.
 
-Some cached responses do not advertise a content length. Model storage totals can therefore be reported as a lower bound with some file sizes unknown. The application does not load weight bodies just to compute their sizes.
+The displayed storage estimate comes from the browser and can include other data owned by the same origin. The application does not load weight bodies just to compute their sizes.
 
-File listings can include files that RAGbox does not own. Deletion is limited to the allowlist in [src/reset.ts](../src/reset.ts), including the collection databases and legacy demo Parquet paths. Model deletion matches files belonging to the configured MiniCPM model rather than clearing unrelated browser caches.
+Collection deletion is limited to the selected database and its owned WAL/helper files. Model deletion matches files belonging to the configured MiniCPM model rather than clearing unrelated browser caches.
 
 ## Remove saved data
 
 | Action | Removed | Retained |
 | --- | --- | --- |
-| **Delete index data** | Both collection databases, their owned helper files, and legacy demo Parquet files. | Model cache, conversations, and source snapshots. |
-| **Delete model** | Cached MiniCPM model files. | Collection indexes, conversations, and source snapshots. |
-| **Delete indexes and model** | The index-data set and model files above. | Conversations and source snapshots. |
-| Individual OPFS file deletion | The selected owned file; deleting either collection database also removes its owned WAL/helper files. | Other files, model cache, and conversations. |
-| **Clear history**, when History is enabled | Saved conversations and legacy search history. | Collection indexes and model files. |
+| Delete **NFCorpus index** | NFCorpus database and its owned helper files. | MS MARCO, model cache, conversations, and source snapshots. |
+| Delete **MS MARCO index** | Saved MS MARCO database and its owned helper files. | NFCorpus, model cache, conversations, and source snapshots. |
+| Delete **Answer model** | Cached MiniCPM model files. | Collection indexes, conversations, and source snapshots. |
+| Delete **Conversations** | Saved conversations and legacy search history. | Collection indexes and model files. |
 
-Resource deletion requires confirmation, closes the appropriate runtimes, and reloads the page. Controls are disabled during active resource work. If shutdown or deletion fails, **Reload to recover** appears. Close other RAGbox tabs before retrying.
+Select a resource's trash button, then confirm **Delete**. Resource deletion closes the appropriate runtime and updates the workspace in place. Controls are disabled during active resource work. If deletion fails, the panel reports failure and the relevant resource retains its error status. Close other RAGbox tabs before retrying.
 
-Deleting an index or model leaves stored conversations and their source text readable. New retrieval requires a ready collection; new answers also require a ready model. **Clear history** stops active work and starts an empty chat. It is unavailable while History is disabled.
+Deleting an index or model leaves stored conversations and their source text readable. New retrieval requires a ready collection; new answers also require a ready model. Deleting **Conversations** starts an empty chat.
 
 The application's deletion controls do not remove downloaded files on your computer or generated files in the checkout. Browser-level clearing of all site data is broader than these controls and can remove conversations and preferences too.
 

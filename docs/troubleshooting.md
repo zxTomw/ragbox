@@ -1,6 +1,6 @@
 # RAGbox: Troubleshooting
 
-Use the collection and model status messages in Chat or Settings to identify the failing stage. A ready collection is enough for keyword search; generated answers also require a ready model.
+Use the collection and model status messages in Chat or Workspace setup to identify the failing stage. A ready collection is enough for keyword search; generated answers also require a ready model.
 
 ## Installation and startup
 
@@ -20,8 +20,8 @@ Use the collection and model status messages in Chat or Settings to identify the
 | --- | --- |
 | NFCorpus says the dataset is missing | Run `npm run prepare:nfcorpus -- /path/to/nfcorpus/corpus.jsonl` and confirm `public/data/nfcorpus.jsonl` exists. For a deployed site, prepare it before rebuilding so it reaches `dist/data/`. |
 | Preparation rejects the corpus | Use the BEIR NFCorpus `corpus.jsonl` with exactly 3,633 unique `_id` values and string title/text fields. The preparation script expects BEIR input, rather than its own converted output. |
-| NFCorpus offers **Retry setup** | Retry after resolving the displayed error. Check data availability and FTS requests. If a saved table is incompatible, inspect its owned database in Settings before deleting it. |
-| MS MARCO reports insufficient storage | Make more browser quota available before retrying. The artifact alone is about 3.35 GB; the optional model needs additional space. Use Settings to inspect current files. |
+| NFCorpus preparation reports an error | Retry after resolving the displayed error. Check data availability and FTS requests. If a saved table is incompatible, delete **NFCorpus index** in **Workspace setup → Storage** before preparing it again. |
+| MS MARCO reports insufficient storage | Make more browser quota available before retrying. The artifact alone is about 3.35 GB; the optional model needs additional space. Use **Workspace setup → Storage** to inspect usage and remove unneeded resources. |
 | MS MARCO says the URL returned a web page or reports an incomplete/oversized download | Use a direct database URL with the exact expected byte count. Check redirects and CORS. A landing-page URL is not a database download. See [artifact hosting](collections.md#host-a-compatible-artifact). |
 | MS MARCO downloaded but failed to open | Close other tabs and use the offered open/retry action before downloading again. Opening validates the saved table and FTS macro; a bad or incompatible file may require replacement. |
 | A cancelled MS MARCO download restarts from zero | Partial transfers do not resume across reloads. An older committed index survives a cancelled replacement and can be reopened. |
@@ -38,25 +38,25 @@ Setup does not provide an arbitrary document-upload interface. For the supported
 | The model is unavailable on this device | Check WebGPU support and the adapter's `shader-f16` feature. Desktop Chrome on a supported GPU is the tested target. Keyword search remains usable. |
 | Model transfer shows bytes but no percentage | This is expected: the application has no reliable whole-model denominator from the per-file progress events. GPU initialization is a subsequent stage. |
 | A previously installed model needs files again | Return to the same origin and browser profile. Cache eviction or an interrupted transfer may leave files missing; use **Download missing files** when offered. |
-| Cached files exist but initialization fails | Use **Retry loading**. If metadata is invalid, explicit repair can replace it while keeping valid weights. Check the detailed status and model file listing in Settings. |
-| Cancelling still leaves model files in Settings | Completed cache entries are retained. Unfinished files may need another download. Use **Delete model** if you intend to remove the saved model. |
+| Cached files exist but initialization fails | Use **Retry loading**. If metadata is invalid, explicit repair can replace it while keeping valid weights. Check the detailed status in **Workspace setup → Answer model**. |
+| Cancelling still leaves saved model files | Completed cache entries are retained. Unfinished files may need another download. Delete **Answer model** in **Workspace setup → Storage** to remove the saved model. |
 | Replies take a long time | Replies already skip reasoning. MS MARCO retrieval can take longer than NFCorpus. Device-specific timings in the validation notes are not guarantees. |
 | Reasoning appears but no final answer is produced | An empty final answer remains retryable; reasoning is not used as an answer. Stop or retry the turn and inspect the current model status. |
 | A reply has a valid citation but an unsupported claim | Read that turn's source snapshot. Citation membership does not verify the claim's meaning. Rephrase the question or inspect retrieval directly; see [recorded quality limitations](chat-validation.md#thinking-mode-actual-model-observations). |
 
 See [the model guide](local-model.md) for revision pins, required files, reasoning limits, and recovery behavior.
 
-## Persistence and Settings
+## Persistence and workspace setup
 
 | Symptom | Check and recovery |
 | --- | --- |
 | Indexes or chats appear missing after changing the URL | Check scheme, host, port, and browser profile. Development, preview, and published origins have separate storage. |
-| History is absent from navigation | This is intentional in the default build: `HISTORY_ENABLED` is `false`. Conversations still persist for reloads and follow-ups. |
+| History is absent from navigation | Recent conversations appear directly in the sidebar. Select a title to restore its saved answers and sources. |
 | A chat reopens as **Stopped** | Reload interrupted the turn. Use Retry to continue; the application does not restart inference automatically. |
 | The unsaved-conversation notice appears | The current chat remains in page memory. Check IndexedDB availability, storage restrictions, and quota before relying on a reload to restore it. |
-| Delete controls are disabled | Wait for active downloads, preparation, loading, or inference to finish, or cancel the active work. Deletion also waits for initialization and storage refreshes. |
-| A deletion fails and **Reload to recover** appears | Close other RAGbox tabs, reload, and retry the intended operation. |
-| **Delete indexes and model** leaves conversations | That control keeps conversations and source snapshots by design. **Clear history** removes them when the History feature is enabled. |
+| Delete controls are disabled | Wait for active downloads, preparation, loading, or inference to finish, or cancel the active work. Deletion also waits for collection initialization. |
+| A deletion reports failure | Inspect the resource status, close other RAGbox tabs, reload if needed, and retry the intended operation. |
+| Deleting an index or model leaves conversations | Saved chats and source snapshots are retained. Delete **Conversations** in **Workspace setup → Storage** to remove them. |
 
 Use the [storage guide](storage.md#remove-saved-data) to choose the smallest applicable deletion. Browser-level clearing of all site data is broader and can remove chats and preferences as well as resource files.
 

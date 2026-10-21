@@ -1,6 +1,6 @@
 # RAGbox: Deployment
 
-RAGbox builds to a static site. The host serves application assets and the prepared NFCorpus data; each visitor creates their own browser index and explicitly downloads the optional model or MS MARCO artifact.
+RAGbox builds to a static site. The host serves application assets, bundled DuckDB workers and Wasm modules, self-hosted fonts, and the prepared NFCorpus data; each visitor creates their own browser index and explicitly downloads the optional model or MS MARCO artifact. Publish the built `dist/` directory: publishing the repository through Jekyll serves uncompiled source and produces a broken interface.
 
 ## Build for a static host
 
@@ -28,26 +28,29 @@ The site needs HTTPS outside a loopback development environment so that OPFS and
 After building with `--base=/ragbox/`, run the installed Vite preview server:
 
 ```sh
-npm exec -- vite preview --host 127.0.0.1 --port 4173 --strictPort
+npm exec -- vite preview --host 127.0.0.1 --port 4173 --strictPort --base=/ragbox/
 ```
 
-Open [http://127.0.0.1:4173/ragbox/](http://127.0.0.1:4173/ragbox/) and check Chat, Settings, collection preparation, and the model worker. Preview storage is separate from the development server on port `5173`.
+Open [http://127.0.0.1:4173/ragbox/](http://127.0.0.1:4173/ragbox/) and check Chat, Collections, Workspace setup, collection preparation, and the model worker. Preview storage is separate from the development server on port `5173`.
 
-Workers, dataset requests, navigation, and Settings links must work under the chosen base. The production-path checks in [the development guide](development.md#validation) complement a successful bundle build.
+Workers, Wasm modules, fonts, dataset requests, navigation, and workspace controls must work under the chosen base. The production-path checks in [the development guide](development.md#validation) complement a successful bundle build.
 
 ## Deploy with GitHub Pages
 
 The existing [Pages workflow](../.github/workflows/pages.yml) runs on pushes to `main` and manual dispatch. It:
 
-1. Uses Node.js 22 and installs the locked dependencies.
-2. Runs the test suite.
-3. Downloads the BEIR NFCorpus archive and runs the preparation script.
-4. Configures Pages and builds with `npm run build -- --base=/ragbox/`.
+1. Ensures Pages uses the application workflow rather than a branch/Jekyll build.
+2. Uses Node.js 22, installs the locked dependencies, and runs the tests.
+3. Prepares NFCorpus, using the checksum-verified published input if the original dataset host is unavailable.
+4. Builds with the base path reported by Pages and records the commit in `deployment.json`.
 5. Uploads `dist/` and deploys the Pages artifact.
+6. Verifies the live commit, compiled assets, dark React interface, and mobile keyboard navigation. Desktop/mobile previews and a browser trace are saved as the `deployment-browser-check` Actions artifact.
 
 In the repository's **Settings → Pages → Build and deployment**, choose **GitHub Actions** as the source. Push the intended changes to `main`, or run **Deploy demo to GitHub Pages** manually from Actions. The deployment job reports the published URL.
 
-The current build path is explicitly `/ragbox/`. The workflow exports Pages metadata as `PAGES_BASE`, but the build command does not consume that variable. For a renamed repository, custom path, or origin-root deployment, update the command's `--base` to match the destination and repeat the production-path smoke check.
+The workflow consumes Pages' `base_path` output, so project sites such as `/ragbox/` and custom domains at `/` use the matching asset paths. Avoid switching the source back to **Deploy from a branch**, which skips the Vite build.
+
+To check another published build manually, run `npm run check:deployment -- https://example.org/ragbox/`. Pass an expected commit SHA as the second argument when the site includes a deployment manifest.
 
 Generated NFCorpus data is included in the deployment artifact and stays ignored by Git. The workflow does not bundle the MS MARCO database or MiniCPM weights. Existing browser storage on localhost does not transfer to the published origin.
 
@@ -68,7 +71,7 @@ VITE_MSMARCO_INDEX_URL=https://example.org/msmarco-prebuilt.duckdb \
 
 For the Pages workflow, set a repository Actions variable named **`MSMARCO_INDEX_URL`**. The workflow passes it as `VITE_MSMARCO_INDEX_URL` during the build. An unset or empty value uses the application's default URL. Vite embeds the chosen URL in public client code, so it must not contain credentials or secrets.
 
-The URL override does not change the expected **3,346,542,592-byte** length in [src/msmarco.ts](../src/msmarco.ts). A different artifact requires updating that constant and size labels, plus preserving the table and FTS schema. See [collection compatibility](collections.md#host-a-compatible-artifact).
+The URL override does not change the expected **3,346,542,592-byte** length in [src/app-runtime.ts](../src/app-runtime.ts). A different artifact requires updating that constant and size labels, plus preserving the table and FTS schema. See [collection compatibility](collections.md#host-a-compatible-artifact).
 
 The downloader accepts HTTPS and loopback HTTP, rejects HTML responses, and verifies the exact streamed byte count before committing. A cross-origin host must permit browser fetches through CORS, including across redirects. These checks validate transfer completion and basic database compatibility; they are not a cryptographic integrity check.
 
@@ -76,13 +79,12 @@ The downloader accepts HTTPS and loopback HTTP, rejects HTML responses, and veri
 
 A deployed application can request:
 
-- Application assets and `data/nfcorpus.jsonl` from the static host.
-- DuckDB workers and Wasm modules selected from its jsDelivr bundles.
-- The matching DuckDB FTS extension assets.
-- Model files from Hugging Face after an explicit download or repair action.
-- The configured MS MARCO artifact after a confirmed download.
+- Application JavaScript/CSS, DuckDB EH/MVP classic workers and Wasm modules, DM Sans and Instrument Serif font files, and `data/nfcorpus.jsonl` from the static host. Vite emits their URLs beneath the configured base path.
+- The matching DuckDB FTS extension assets from the DuckDB extension host, normally `https://extensions.duckdb.org`.
+- Model files from Hugging Face after an explicit download or repair action, including any download redirect hosts used by Hugging Face.
+- The configured MS MARCO artifact after an explicit download, including any redirect hosts. The default artifact is hosted on Hugging Face.
 
-Account for those origins when configuring network restrictions or a Content Security Policy. The application also creates workers from blob URLs for DuckDB. Test actual runtime initialization under the host's policy; serving the HTML successfully does not establish worker, extension, or GPU readiness.
+Account for those origins when configuring network restrictions or a Content Security Policy. The active DuckDB runtime starts a classic worker directly from the app’s origin; it does not create a blob wrapper or fetch a worker/Wasm bundle from jsDelivr. Allow same-origin workers (`worker-src 'self'`) and fonts (`font-src 'self'`), permit WebAssembly compilation in the applicable script policy, and allow required asset and remote download origins in `connect-src`. Browsers enforcing Wasm CSP may require `'wasm-unsafe-eval'` in `script-src`. Review any additional worker requirements of the inference runtime separately. Test actual initialization under the deployed policy; serving the HTML successfully does not establish worker, extension, or GPU readiness.
 
 Retrieval and generation stay on the device, but startup is not guaranteed to work fully offline. Cached model files can be reused without automatically downloading missing model files. Browser eviction, quota limits, and origin changes still affect persistence; see [browser storage](storage.md).
 
