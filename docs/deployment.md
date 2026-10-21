@@ -39,7 +39,7 @@ Workers, Wasm modules, fonts, dataset requests, navigation, and workspace contro
 
 The existing [Pages workflow](../.github/workflows/pages.yml) runs on pushes to `main` and manual dispatch. It:
 
-1. Ensures Pages uses the application workflow rather than a branch/Jekyll build.
+1. Checks the Pages publishing source and warns if a branch/Jekyll build is enabled. Changing the source requires repository administration permission, which the workflow token does not have.
 2. Uses Node.js 22, installs the locked dependencies, and runs the tests.
 3. Prepares NFCorpus, using the checksum-verified published input if the original dataset host is unavailable.
 4. Builds with the base path reported by Pages and records the commit in `deployment.json`.
